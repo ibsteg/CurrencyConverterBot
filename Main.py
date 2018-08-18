@@ -1,10 +1,10 @@
 import json
+import os
 import requests
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
 
 
-TOKEN = 'BOT_TOKEN'
 PB_API = 'https://api.privatbank.ua/p24api/pubinfo?exchange&json&coursid=11'
 
 updater = Updater(token=TOKEN)
@@ -123,13 +123,11 @@ def additionalInfo(bot, update):
     query = update.callback_query
     item.append(query.data)
 
-    text = ''
-
     global currency
     currency = findItem(item[0])
 
     if item[1] == 'Course':
-        text += u'\U0001F4B5	' + currency['base_ccy'] + u' \U000027A1 ' + currency['ccy'] + '\n'
+        text = u'\U0001F4B5	' + currency['base_ccy'] + u' \U000027A1 ' + currency['ccy'] + '\n'
         text += 'Buy: ' + currency['buy'] + '\n' + 'Sale: ' + currency['sale']
 
         keyboard = [[InlineKeyboardButton("Back to beginning", callback_data='Back')]]
@@ -140,21 +138,20 @@ def additionalInfo(bot, update):
             message_id=query.message.message_id,
             text=text)
 
-        bot.edit_message_reply_markup(
+        bot.send_message(
             chat_id=query.message.chat_id,
-            message_id=query.message.message_id,
+            text='Do you wanna go back?',
             reply_markup=markup
         )
 
         return CURRENCY
 
     elif item[1] in ['Buy', 'Sale']:
-        text += "Enter the amount to calculate the exchange:"
 
         bot.edit_message_text(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id,
-            text=text)
+            text="Enter the amount to calculate the exchange:")
 
     return RESULT
 
