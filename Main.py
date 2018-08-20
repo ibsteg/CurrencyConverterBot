@@ -3,7 +3,7 @@ import requests
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
 
-
+TOKEN = "TELEGRAM_BOT_TOKEN"
 PB_API = 'https://api.privatbank.ua/p24api/pubinfo?exchange&json&coursid=11'
 
 updater = Updater(token=TOKEN)
@@ -15,7 +15,7 @@ json_data = json.loads(result.text)
 CURRENCY, ACTION, ADDITIONAL, RESULT = range(4)
 
 
-def findItem(criterion: str)->dict:
+def findItem(criterion: str) -> dict:
     """
     Get field from json according to criterion currency information
     :param criterion: string with criterion for finding info about currency in database
@@ -163,43 +163,46 @@ def textMessage(bot, update):
     :return CURRENCY: pointer to next function to form dialog with user
     """
 
-    global num
-    query = update.message.text
-
     try:
-        num = float(query)
-    except:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=u'Wrong format: Please, enter number. \n'
-                         u'\U000026A0 Fractional number must have . as separator!')
+        global num
+        query = update.message.text
 
-    keyboard = [[InlineKeyboardButton("Back to beginning", callback_data='Back')]]
-    markup = InlineKeyboardMarkup(keyboard)
+        try:
+            num = float(query)
+        except ValueError:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text=u'Wrong format: Please, enter number. \n'
+                                  u'\U000026A0 Fractional number must have . as separator!')
 
-    if len(item) > 0:
-        text = ''
-        if item[1] == 'Buy':
-            text += "To buy %.2f %s you need " % (num, item[0])
-            text += str(float(currency['sale']) * num) + ' ' + currency['base_ccy']
+        keyboard = [[InlineKeyboardButton("Back to beginning", callback_data='Back')]]
+        markup = InlineKeyboardMarkup(keyboard)
+
+        if len(item) > 0:
+            text = ''
+            if item[1] == 'Buy':
+                text += "To buy %.2f %s you need " % (num, item[0])
+                text += str(float(currency['sale']) * num) + ' ' + currency['base_ccy']
+
+                bot.send_message(
+                    chat_id=update.message.chat_id,
+                    text=text)
+
+            elif item[1] == 'Sale':
+
+                text += "You can sell %.2f %s for " % (num, item[0])
+                text += str(float(currency['buy']) * num) + ' ' + currency['base_ccy']
+
+                bot.send_message(
+                    chat_id=update.message.chat_id,
+                    text=text)
 
             bot.send_message(
                 chat_id=update.message.chat_id,
-                text=text)
-
-        elif item[1] == 'Sale':
-
-            text += "You can sell %.2f %s for " % (num, item[0])
-            text += str(float(currency['buy']) * num) + ' ' + currency['base_ccy']
-
-            bot.send_message(
-                chat_id=update.message.chat_id,
-                text=text)
-
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text='Do you wanna go back?',
-            reply_markup=markup
-        )
+                text='Do you wanna go back?',
+                reply_markup=markup
+            )
+    except NameError:
+        return RESULT
 
     return CURRENCY
 
