@@ -3,7 +3,7 @@ import requests
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
 
-TOKEN = '671082097:AAFZ7i1Y8YJ2803kUQe2PsIGTH81DJf1i9E'
+TOKEN = ''
 PB_API = 'https://api.privatbank.ua/p24api/pubinfo?exchange&json&coursid=11'
 
 updater = Updater(token=TOKEN)
